@@ -1,3 +1,4 @@
+import { differenceBy } from 'lodash'
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Panel } from 'primereact/panel'
@@ -29,20 +30,26 @@ export class PedidoComponent extends React.Component {
     clearInterval(this.timerID)
   }
 
-  componentDidUpdate() {
-    console.log('component did update')
-  }
-
   async actualizarPedidosPendientes() {
-    const toast = this.toast.current
     try {
       const pedidosPendientes = await getPedidosPendientes()
-      toast.show({ severity: 'success', detail: 'Nuevos pedidos actualizados' })
       this.setState({
         pedidosPendientes
       })
     } catch (e) {
-      toast.show({ severity: 'error', detail: e.message })
+      this.toast.current.show({ severity: 'error', detail: e.message })
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const idPedido = (pedido) => pedido.id
+    const idPedidosViejos = prevState.pedidosPendientes.map(idPedido)
+    const idPedidosNuevos = this.state.pedidosPendientes.map(idPedido)
+    if (idPedidosViejos !== idPedidosNuevos) {
+      const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
+      const cuantosPedidosViejos = differenceBy(idPedidosViejos, idPedidosNuevos).length
+      const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosViejos}`
+      this.toast.current.show({ severity: 'success', detail })
     }
   }
 

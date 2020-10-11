@@ -114,12 +114,78 @@ Por ese motivo, y para estos casos muy puntuales donde necesitamos manipular el 
 
 ### Actualización del estado
 
-No usar this.state
+El método actualizarPedidosPendientes hace la llamada asincrónica para recibir los pedidos pendientes, lo que requiere actualizar el estado de la página para forzar el render:
+
+```js
+  async actualizarPedidosPendientes() {
+    try {
+      const pedidosPendientes = await getPedidosPendientes()
+      this.setState({
+        pedidosPendientes
+      })
+    } catch (e) {
+      this.toast.current.show({ severity: 'error', detail: e.message })
+    }
+  }
+```
+
+Recordemos:
+
+- no debemos cambiar el estado mediante `this.state = ...` sino llamando al método `setState`
+- el método es `async`, por eso envolvemos el pedido en un `try/catch` para mostrar el error ante cualquier problema
 
 ### Component will unmount
 
+En este evento eliminaremos la ejecución periódica del método que busca los pedidos pendientes:
+
+```js
+componentWillUnmount() {
+  console.log('component will unmount')
+  clearInterval(this.timerID)
+}
+```
+
+Es poco frecuente ver código asociado a este evento, las excepciones tienen que ver con liberar recursos del sistema.
+
 ### Component did update
+
+Un detalle adicional que queremos mostrar es
+
+- cuántos pedidos nuevos hay (los que no estaban anteriormente y ahora aparecen = Nuevos - Viejos, según la teoría de conjuntos)
+- cuántos pedidos se entregaron (los que estaban anteriormente y ahora no están = Viejos - Nuevos, según la teoría de conjuntos)
+
+Esto lo podríamos hacer en el mismo service, aunque deberíamos devolver un JSON más complejo, donde estén las cantidades de pedidos nuevos y entregados junto con los pedidos pendientes. Como alternativa, vamos a aprovechar el evento `componentDidUpdate` como método en nuestro componente React, donde recibiremos las props y el estado previo:
+
+```js
+  componentDidUpdate(prevProps, prevState) {
+    const idPedido = (pedido) => pedido.id
+    const idPedidosViejos = prevState.pedidosPendientes.map(idPedido)
+    const idPedidosNuevos = this.state.pedidosPendientes.map(idPedido)
+    if (idPedidosViejos !== idPedidosNuevos) {
+      const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
+      const cuantosPedidosViejos = differenceBy(idPedidosViejos, idPedidosNuevos).length
+      const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosViejos}`
+      this.toast.current.show({ severity: 'success', detail })
+    }
+  }
+```
+
+Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y viceversa (gracias a la función `differenceBy` de Lodash) y mostramos el toast si hay alguna diferencia.
 
 ## Test
 
-## Resumen
+Solo tenemos un _smoke test_ del componente, con el nuevo formato de testeo unitario de Enzyme:
+
+```js
+test('renders a header with title', () => {
+  const { getByText } = render(<App />)
+  const pedidosElement = getByText('Pedidos')
+  expect(pedidosElement).toBeInTheDocument()
+})
+```
+
+Dejamos al lector la implementación de casos de prueba adicionales.
+
+## Bibliografía adicional
+
+- [Estado y ciclo de vida de los componentes de React](https://es.reactjs.org/docs/state-and-lifecycle.html)

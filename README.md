@@ -9,3 +9,4 @@ En este ejemplo podemos ver cómo funcionan los eventos en un componente React m
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+Dónde se puede modificar el estado.

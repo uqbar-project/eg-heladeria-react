@@ -1,0 +1,1 @@
+export const formatearGusto = (gusto) => gusto.charAt(0).toUpperCase() + gusto.slice(1)

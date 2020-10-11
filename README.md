@@ -1,4 +1,5 @@
 
+[![Build Status](https://travis-ci.com/uqbar-project/eg-heladeria-react.svg?branch=master)](https://travis-ci.com/uqbar-project/eg-heladeria-react)
 
 ## Ejemplo - Ciclo de vida de un componente React
 

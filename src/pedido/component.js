@@ -55,7 +55,7 @@ export class PedidoComponent extends React.Component {
 
   render() {
     return (
-      <Panel header="Pedidos" >
+      <Panel header="Pedidos">
         <DataTable value={this.state.pedidosPendientes}>
           <Column field="cliente" header="Cliente" sortable></Column>
           <Column field="direccion" header="Domicilio de entrega" sortable></Column>

@@ -69,7 +69,7 @@ Además vamos a guardar una referencia al componente Toast, para poder mostrar u
 
 ### Render
 
-El componente React utiliza el framework PrimeReact para simplificar la creación de la tabla, solo debemos indicar declarativamente cuáles son las columnas que nos interesan:
+El componente React utiliza el framework [PrimeReact](https://www.primefaces.org/primereact/) para simplificar la creación de la tabla, solo debemos indicar declarativamente cuáles son las columnas que nos interesan:
 
 ```jsx
   render() {

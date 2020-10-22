@@ -34,7 +34,7 @@ export class PedidoComponent extends React.Component {
     try {
       const pedidosPendientes = await getPedidosPendientes()
       this.setState({
-        pedidosPendientes
+        pedidosPendientes,
       })
     } catch (e) {
       this.toast.current.show({ severity: 'error', detail: e.message })
@@ -42,6 +42,7 @@ export class PedidoComponent extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('component did update')
     const idPedido = (pedido) => pedido.id
     const idPedidosViejos = prevState.pedidosPendientes.map(idPedido)
     const idPedidosNuevos = this.state.pedidosPendientes.map(idPedido)
@@ -49,17 +50,18 @@ export class PedidoComponent extends React.Component {
       const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
       const cuantosPedidosViejos = differenceBy(idPedidosViejos, idPedidosNuevos).length
       const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosViejos}`
-      this.toast.current.show({ severity: 'success', detail })
+      this.toast.current.show({ severity: 'info', detail, closable: false })
     }
   }
 
   render() {
+    console.log('render')
     return (
       <Panel header="Pedidos">
         <DataTable value={this.state.pedidosPendientes}>
           <Column field="cliente" header="Cliente" sortable></Column>
           <Column field="direccion" header="Domicilio de entrega" sortable></Column>
-          <Column field="gustosPedidos" header="Gustos" sortable></Column>
+          <Column field="gustosPedidos" header="Gustos"></Column>
         </DataTable>
         <Toast ref={this.toast}></Toast>
       </Panel>

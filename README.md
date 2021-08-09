@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.com/uqbar-project/eg-heladeria-react.svg?branch=master)](https://travis-ci.com/uqbar-project/eg-heladeria-react)
+[![Build React App](https://github.com/uqbar-project/eg-heladeria-react/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/uqbar-project/eg-heladeria-react/actions/workflows/build.yml) ![coverage](./badges/coverage/coverage.svg)
 
 ## Ejemplo - Ciclo de vida de un componente React
 

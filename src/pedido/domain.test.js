@@ -12,8 +12,7 @@ test('cuando el pedido se despacha deja de estar pendiente', () => {
 })
 
 test('cuando el pedido se cancela vuelve a estar pendiente', () => {
-  const pedido = getPedidoDefault()
-  pedido.entregar()
+  const pedido = getPedidoEntregado()
   pedido.cancelar()
   expect(pedido.estaPendiente()).toBeTruthy()
 })
@@ -25,4 +24,8 @@ test('los pedidos concatenan los gustos en orden', () => {
 
 function getPedidoDefault() {
   return new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani')
+}
+
+function getPedidoEntregado() {
+  return new Pedido(['dulce de leche', 'chocolate'], 'Murguiondo 1519', 'Camila Fusani', true)
 }

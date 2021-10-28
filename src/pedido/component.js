@@ -48,8 +48,8 @@ export class PedidoComponent extends React.Component {
     const idPedidosNuevos = this.state.pedidosPendientes.map(idPedido)
     if (idPedidosViejos !== idPedidosNuevos) {
       const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
-      const cuantosPedidosViejos = differenceBy(idPedidosViejos, idPedidosNuevos).length
-      const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosViejos}`
+      const cuantosPedidosDespachados = differenceBy(idPedidosViejos, idPedidosNuevos).length
+      const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
       this.toast.current.show({ severity: 'info', detail, closable: false })
     }
   }

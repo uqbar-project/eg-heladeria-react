@@ -164,8 +164,8 @@ Esto lo podríamos hacer en el mismo service, aunque deberíamos devolver un JSO
     const idPedidosNuevos = this.state.pedidosPendientes.map(idPedido)
     if (idPedidosViejos !== idPedidosNuevos) {
       const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
-      const cuantosPedidosViejos = differenceBy(idPedidosViejos, idPedidosNuevos).length
-      const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosViejos}`
+      const cuantosPedidosDespachados = differenceBy(idPedidosViejos, idPedidosNuevos).length
+      const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
       this.toast.current.show({ severity: 'success', detail })
     }
   }
@@ -175,17 +175,48 @@ Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y vice
 
 ## Test
 
-Solo tenemos un _smoke test_ del componente, con el nuevo formato de testeo unitario de Enzyme:
+El test del componente
+
+- genera un stub del service, principalmente con fines didácticos, ya que no estamos realmente consultando a un servicio externo
+- por otra parte, trabaja con **fake timers** para simular que pasaron 11 segundos y verificar que efectivamente se ve la lista de pedidos (es importante limpiar esos timers en el método `afterEach`)
+- para testear que no hay pedidos, PrimeReact genera un div vacío cuya clase exacta estamos verificando (no es un test que tenga mucha resiliencia pero también lo mostramos con fines didácticos)
+- para testear que hay pedidos, estamos utilizando el queryByRole donde `row` hace referencia a un tag `<tr>` (lo interesante es que puede haber más de un tag html que cumpla ese rol)
 
 ```js
-test('renders a header with title', () => {
-  const { getByText } = render(<App />)
-  const pedidosElement = getByText('Pedidos')
-  expect(pedidosElement).toBeInTheDocument()
+jest.mock('./service')
+
+beforeEach(() => {
+  jest.useFakeTimers()
+  getPedidosPendientes.mockResolvedValue([
+    new Pedido(['pistacchio', 'dulce de leche'], 'Francia 921 - San Martín', 'Luisa Arévalo'),
+    new Pedido(['chocolate', 'crema tramontana', 'crema rusa'], 'Córdoba esq. Crámer', 'El Cholo'),
+    new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani'),
+  ])
+})
+
+afterEach(() => {
+  jest.runOnlyPendingTimers()
+  jest.useRealTimers()
+})
+
+test('inicialmente no tenemos pedidos', () => {
+  const { getAllByRole } = render(<PedidoComponent />)
+  const emptyRow = getAllByRole('row').find((row) => row.className === 'p-datatable-emptymessage')
+  expect(emptyRow).toBeTruthy()
+})
+
+test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
+  const { queryAllByRole } = render(<PedidoComponent />)
+  jest.advanceTimersByTime(11000)
+  await waitFor(async () => {
+    const allRows = queryAllByRole('row')
+    // hay que considerar el encabezado
+    // es muy desagradable tener que hacer esto pero el componente DataTable no nos da data-testid
+    expect(allRows.length).toBe(4)
+  })
+  
 })
 ```
-
-Dejamos al lector la implementación de casos de prueba adicionales.
 
 ## Bibliografía adicional
 

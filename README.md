@@ -200,16 +200,16 @@ afterEach(() => {
 })
 
 test('inicialmente no tenemos pedidos', () => {
-  const { getAllByRole } = render(<PedidoComponent />)
-  const emptyRow = getAllByRole('row').find((row) => row.className === 'p-datatable-emptymessage')
+  render(<PedidoComponent />)
+  const emptyRow = screen.getAllByRole('row').find((row) => row.className === 'p-datatable-emptymessage')
   expect(emptyRow).toBeTruthy()
 })
 
 test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
-  const { queryAllByRole } = render(<PedidoComponent />)
+  render(<PedidoComponent />)
   jest.advanceTimersByTime(11000)
   await waitFor(async () => {
-    const allRows = queryAllByRole('row')
+    const allRows = screen.queryAllByRole('row')
     // hay que considerar el encabezado
     // es muy desagradable tener que hacer esto pero el componente DataTable no nos da data-testid
     expect(allRows.length).toBe(4)

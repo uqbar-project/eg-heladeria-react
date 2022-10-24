@@ -3,68 +3,58 @@ import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Panel } from 'primereact/panel'
 import { Toast } from 'primereact/toast'
-import React, { createRef } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 
 import { getPedidosPendientes } from './service'
 
-export class PedidoComponent extends React.Component {
+export const PedidoComponent = (props) => {
 
-  constructor(props) {
-    super(props)
-    this.toast = createRef()
-    this.state = {
-      pedidosPendientes: [],
-    }
-  }
+  const [pedidosPendientes, setPedidosPendientes] = useState([])
+  const toast = useRef(null)
 
-  componentDidMount() {
-    console.log('component did mount')
-    this.timerID = setInterval(
-      () => this.actualizarPedidosPendientes(),
+  useEffect(() => {
+    const timerID = setInterval(
+      async () => {
+        try {
+          console.info('Actualizando pedidos pendientes')
+          const nuevosPedidosPendientes = await getPedidosPendientes()
+          actualizarPedidos(pedidosPendientes, nuevosPedidosPendientes)
+          setPedidosPendientes(nuevosPedidosPendientes)
+        } catch (e) {
+          toast.current.show({ severity: 'error', detail: e.message })
+        }
+      },
       10000
     )
-  }
 
-  componentWillUnmount() {
-    console.log('component will unmount')
-    clearInterval(this.timerID)
-  }
+    // Importante quitar el timer ya que si no se siguen agregando intervalos para disparar los pedidos pendientes
+    return () => { clearInterval(timerID) }
+  })
 
-  async actualizarPedidosPendientes() {
-    try {
-      const pedidosPendientes = await getPedidosPendientes()
-      this.setState({
-        pedidosPendientes,
-      })
-    } catch (e) {
-      this.toast.current.show({ severity: 'error', detail: e.message })
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    console.log('component did update')
+  // actualizar pedidos
+  const actualizarPedidos = (pedidosPendientes, nuevosPedidosPendientes) => {
     const idPedido = (pedido) => pedido.id
-    const idPedidosViejos = prevState.pedidosPendientes.map(idPedido)
-    const idPedidosNuevos = this.state.pedidosPendientes.map(idPedido)
+    const idPedidosViejos = pedidosPendientes.map(idPedido)
+    const idPedidosNuevos = nuevosPedidosPendientes.map(idPedido)
+    console.info(idPedidosViejos, idPedidosNuevos)
     if (idPedidosViejos !== idPedidosNuevos) {
       const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
       const cuantosPedidosDespachados = differenceBy(idPedidosViejos, idPedidosNuevos).length
       const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
-      this.toast.current.show({ severity: 'info', detail, closable: false })
+      toast.current.show({ severity: 'info', detail, closable: false })
     }
   }
 
-  render() {
-    console.log('render')
-    return (
-      <Panel header="Pedidos">
-        <DataTable value={this.state.pedidosPendientes}>
-          <Column data-testid="fila" field="cliente" header="Cliente" sortable></Column>
-          <Column field="direccion" header="Domicilio de entrega" sortable></Column>
-          <Column field="gustosPedidos" header="Gustos"></Column>
-        </DataTable>
-        <Toast ref={this.toast}></Toast>
-      </Panel>
-    )
-  }
+  // render propiamente dicho
+  return (
+    <Panel header="Pedidos">
+      <DataTable value={pedidosPendientes}>
+        <Column data-testid="fila" field="cliente" header="Cliente" sortable></Column>
+        <Column field="direccion" header="Domicilio de entrega" sortable></Column>
+        <Column field="gustosPedidos" header="Gustos"></Column>
+      </DataTable>
+      <Toast ref={toast}></Toast>
+    </Panel>
+  )
+
 }

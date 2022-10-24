@@ -9,7 +9,7 @@ En este ejemplo podemos ver cómo funcionan los eventos en un componente React m
 
 ## Arquitectura general de la aplicación
 
-![Arquitectura - Diagrama](./images/Arquitectura.png)
+![Arquitectura - Diagrama](./images/HeladeriaCicloVidaReact.png)
 
 En esta solución participan
 
@@ -54,37 +54,29 @@ export const getPedidosPendientes = async () => {
 
 ### Estado
 
-Necesitamos que nuestro componente reaccione ante los cambios en los pedidos pendientes, por eso formará parte de nuestro estado:
+- Necesitamos que nuestro componente reaccione ante los cambios en los pedidos pendientes, por eso formará parte de nuestro estado.
+- Además vamos a guardar una referencia al componente Toast, para poder mostrar un mensaje al usuario en caso de actualizar satisfactoriamente o encontrar un error.
 
 ```jsx
-  constructor(props) {
-    super(props)
-    this.toast = createRef()
-    this.state = {
-      pedidosPendientes: [],
-    }
-  }
+const [pedidosPendientes, setPedidosPendientes] = useState([])
+const toast = useRef(null)
 ```
-
-Además vamos a guardar una referencia al componente Toast, para poder mostrar un mensaje al usuario en caso de actualizar satisfactoriamente o encontrar un error.
 
 ### Render
 
 El componente React utiliza el framework [PrimeReact](https://www.primefaces.org/primereact/) para simplificar la creación de la tabla, solo debemos indicar declarativamente cuáles son las columnas que nos interesan:
 
 ```jsx
-  render() {
-    return (
-      <Panel header="Pedidos">
-        <DataTable value={this.state.pedidosPendientes}>
-          <Column field="cliente" header="Cliente" sortable></Column>
-          <Column field="direccion" header="Domicilio de entrega" sortable></Column>
-          <Column field="gustosPedidos" header="Gustos" sortable></Column>
-        </DataTable>
-        <Toast ref={this.toast}></Toast>
-      </Panel>
-    )
-  }
+return (
+  <Panel header="Pedidos">
+    <DataTable value={pedidosPendientes}>
+      <Column data-testid="fila" field="cliente" header="Cliente" sortable></Column>
+      <Column field="direccion" header="Domicilio de entrega" sortable></Column>
+      <Column field="gustosPedidos" header="Gustos"></Column>
+    </DataTable>
+    <Toast ref={toast}></Toast>
+  </Panel>
+)
 ```
 
 En el ejemplo, "Domicilio de entrega" es lo que figurará en nuestro Table Header, mientras que el valor de cada fila se llenará con el atributo `direccion` de cada helado.
@@ -95,9 +87,9 @@ Fíjense además que la definición del Toast hace referencia a nuestra variable
 
 ![React Lifecycle Methods](./images/ReactLifecycle.png)
 
-### Component did mount
+### Component did mount: hook useEffect
 
-Cuando nuestro componente comience, disparamos cada _x_ segundos la llamada asincrónica que obtiene los pedidos pendientes. 
+Cuando nuestro componente comience, disparamos cada _x_ segundos la llamada asincrónica que obtiene los pedidos pendientes. Originalmente esto se hacía de esta manera:
 
 ```js
   componentDidMount() {
@@ -109,66 +101,49 @@ Cuando nuestro componente comience, disparamos cada _x_ segundos la llamada asin
   }
 ```
 
-Esto podemos hacerlo en el constructor, o en el evento `componentDidMount`. Dado que estamos esperando 10 segundos para actualizar el estado, podríamos haber utilizado el constructor sin inconvenientes. No obstante, si necesitamos acceder a elementos del DOM (como al Toast) esto representa un problema si estamos trabajando en el constructor, porque todavía no hay elementos en nuestro HTML, estamos en una fase previa.
+El hook `useEffect` nos sirve para este efecto:
 
-Por ese motivo, y para estos casos muy puntuales donde necesitamos manipular el DOM, React provee un evento `componentDidMount` que se ubica temporalmente después de ejecutar el constructor, el render y luego de haber actualizado las referencias y el DOM.
+```jsx
+useEffect(() => {
+  const timerID = setInterval(
+    async () => {
+      try {
+        console.info('Actualizando pedidos pendientes')
+        const nuevosPedidosPendientes = await getPedidosPendientes()
+        actualizarPedidos(pedidosPendientes, nuevosPedidosPendientes)
+        setPedidosPendientes(nuevosPedidosPendientes)
+      } catch (e) {
+        toast.current.show({ severity: 'error', detail: e.message })
+      }
+    },
+    10000
+  )
 
-### Actualización del estado
-
-El método actualizarPedidosPendientes hace la llamada asincrónica para recibir los pedidos pendientes, lo que requiere actualizar el estado de la página para forzar el render:
-
-```js
-  async actualizarPedidosPendientes() {
-    try {
-      const pedidosPendientes = await getPedidosPendientes()
-      this.setState({
-        pedidosPendientes
-      })
-    } catch (e) {
-      this.toast.current.show({ severity: 'error', detail: e.message })
-    }
-  }
+  // Importante quitar el timer ya que si no se siguen agregando intervalos para disparar los pedidos pendientes
+  return () => { clearInterval(timerID) }
+})
 ```
 
-Recordemos:
-
-- no debemos cambiar el estado mediante `this.state = ...` sino llamando al método `setState`
-- el método es `async`, por eso envolvemos el pedido en un `try/catch` para mostrar el error ante cualquier problema
-
-### Component will unmount
-
-En este evento eliminaremos la ejecución periódica del método que busca los pedidos pendientes:
-
-```js
-componentWillUnmount() {
-  console.log('component will unmount')
-  clearInterval(this.timerID)
-}
-```
-
-Es poco frecuente ver código asociado a este evento, las excepciones tienen que ver con liberar recursos del sistema.
-
-### Component did update
+### Mostrando las diferencias
 
 Un detalle adicional que queremos mostrar es
 
 - cuántos pedidos nuevos hay (los que no estaban anteriormente y ahora aparecen = Nuevos - Viejos, según la teoría de conjuntos)
 - cuántos pedidos se entregaron (los que estaban anteriormente y ahora no están = Viejos - Nuevos, según la teoría de conjuntos)
 
-Esto lo podríamos hacer en el mismo service, aunque deberíamos devolver un JSON más complejo, donde estén las cantidades de pedidos nuevos y entregados junto con los pedidos pendientes. Como alternativa, vamos a aprovechar el evento `componentDidUpdate` como método en nuestro componente React, donde recibiremos las props y el estado previo:
-
 ```js
-  componentDidUpdate(prevProps, prevState) {
-    const idPedido = (pedido) => pedido.id
-    const idPedidosViejos = prevState.pedidosPendientes.map(idPedido)
-    const idPedidosNuevos = this.state.pedidosPendientes.map(idPedido)
-    if (idPedidosViejos !== idPedidosNuevos) {
-      const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
-      const cuantosPedidosDespachados = differenceBy(idPedidosViejos, idPedidosNuevos).length
-      const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
-      this.toast.current.show({ severity: 'success', detail })
-    }
+const actualizarPedidos = (pedidosPendientes, nuevosPedidosPendientes) => {
+  const idPedido = (pedido) => pedido.id
+  const idPedidosViejos = pedidosPendientes.map(idPedido)
+  const idPedidosNuevos = nuevosPedidosPendientes.map(idPedido)
+  console.info(idPedidosViejos, idPedidosNuevos)
+  if (idPedidosViejos !== idPedidosNuevos) {
+    const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
+    const cuantosPedidosDespachados = differenceBy(idPedidosViejos, idPedidosNuevos).length
+    const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
+    toast.current.show({ severity: 'info', detail, closable: false })
   }
+}
 ```
 
 Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y viceversa (gracias a la función `differenceBy` de Lodash) y mostramos el toast si hay alguna diferencia.

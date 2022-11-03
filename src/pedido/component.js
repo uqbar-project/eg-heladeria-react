@@ -18,7 +18,7 @@ export const PedidoComponent = (props) => {
         try {
           console.info('Actualizando pedidos pendientes')
           const nuevosPedidosPendientes = await getPedidosPendientes()
-          actualizarPedidos(pedidosPendientes, nuevosPedidosPendientes)
+          mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
           setPedidosPendientes(nuevosPedidosPendientes)
         } catch (e) {
           toast.current.show({ severity: 'error', detail: e.message })
@@ -31,19 +31,13 @@ export const PedidoComponent = (props) => {
     return () => { clearInterval(timerID) }
   })
 
-  // actualizar pedidos
-  const actualizarPedidos = (pedidosPendientes, nuevosPedidosPendientes) => {
+  const mostrarPedidosActualizados = (pedidosPendientes, nuevosPedidosPendientes) => {
     const idPedido = (pedido) => pedido.id
-    const idPedidosViejos = pedidosPendientes.map(idPedido)
-    const idPedidosNuevos = nuevosPedidosPendientes.map(idPedido)
-    console.info(idPedidosViejos, idPedidosNuevos)
-    if (idPedidosViejos !== idPedidosNuevos) {
-      const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
-      const cuantosPedidosDespachados = differenceBy(idPedidosViejos, idPedidosNuevos).length
-      const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
-      toast.current.show({ severity: 'info', detail, closable: false })
-    }
-  }
+    const cuantosPedidosNuevos = differenceBy(nuevosPedidosPendientes, pedidosPendientes, idPedido).length
+    const cuantosPedidosDespachados = differenceBy(pedidosPendientes, nuevosPedidosPendientes, idPedido).length
+    const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
+    toast.current.show({ severity: 'info', detail, closable: false })
+}
 
   // render propiamente dicho
   return (

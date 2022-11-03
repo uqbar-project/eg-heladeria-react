@@ -95,7 +95,7 @@ Fíjense además que la definición del Toast hace referencia a nuestra variable
 
 ### Eventos del componente
 
-![React Lifecycle Methods](./images/ReactLifecycleHooks.png)
+![React Lifecycle Methods](./images/ReactLifecycleHooks2.png)
 
 ### Component did mount / Component did update => hook useEffect
 

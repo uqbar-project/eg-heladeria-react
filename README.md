@@ -3,9 +3,11 @@
 
 ## Ejemplo - Ciclo de vida de un componente React
 
-En este ejemplo podemos ver cómo funcionan los eventos en un componente React modelado como una clase. La aplicación consiste en modelar los pedidos para una heladería:
+La aplicación consiste en modelar los pedidos para una heladería:
 
 ![demo](./images/demo.gif)
+
+Y en este ejemplo vamos a conocer el hook [`useEffect`](https://reactjs.org/docs/hooks-effect.html), asociado al ciclo de vida de los componentes de React.
 
 ## Arquitectura general de la aplicación
 
@@ -15,7 +17,9 @@ En esta solución participan
 
 - el objeto de dominio Helado
 - una función asincrónica que simula pedidos pendientes
-- y el componente React, modelado en este caso como una clase, con estado, que dispara periódicamente la consulta al servicio para obtener los pedidos pendientes
+- y el componente React
+
+Dado que nuestro componente es una función, no podemos producir efectos colaterales (o "efectos"). De hecho si utilizáramos la variante con clases tampoco podemos hacerlo dentro de la función `render()` porque es cuando se están definiendo los elementos de nuestro DOM. En lugar de eso, **cada cierto tiempo, debemos disparar periódicamente la consulta al servicio para obtener los pedidos pendientes**. Esto lo vamos a resolver mediante el hook `useEffect` que terminará generando un nuevo estado (`setPedidosPendientes`).
 
 ## Dominio
 
@@ -55,11 +59,17 @@ export const getPedidosPendientes = async () => {
 ### Estado
 
 - Necesitamos que nuestro componente reaccione ante los cambios en los pedidos pendientes, por eso formará parte de nuestro estado.
-- Además vamos a guardar una referencia al componente Toast, para poder mostrar un mensaje al usuario en caso de actualizar satisfactoriamente o encontrar un error.
+- Además vamos a guardar una referencia al componente Toast, para poder mostrar un mensaje al usuario en caso de actualizar satisfactoriamente o encontrar un error. Para ello existe un nuevo hook, [`useRef`](https://es.reactjs.org/docs/hooks-reference.html#useref).
 
 ```jsx
 const [pedidosPendientes, setPedidosPendientes] = useState([])
 const toast = useRef(null)
+```
+
+`useRef` es una caja donde podemos almacenar cualquier valor y reasignarlo. El valor actual está en la propiedad `current` del objeto:
+
+```js
+toast.current.show({ ... })
 ```
 
 ### Render
@@ -85,9 +95,9 @@ Fíjense además que la definición del Toast hace referencia a nuestra variable
 
 ### Eventos del componente
 
-![React Lifecycle Methods](./images/ReactLifecycle.png)
+![React Lifecycle Methods](./images/ReactLifecycleHooks.png)
 
-### Component did mount: hook useEffect
+### Component did mount / Component did update => hook useEffect
 
 Cuando nuestro componente comience, disparamos cada _x_ segundos la llamada asincrónica que obtiene los pedidos pendientes. Originalmente esto se hacía de esta manera:
 
@@ -101,7 +111,7 @@ Cuando nuestro componente comience, disparamos cada _x_ segundos la llamada asin
   }
 ```
 
-El hook `useEffect` nos sirve para este efecto:
+El hook `useEffect` nos permite lograr el mismo efecto:
 
 ```jsx
 useEffect(() => {
@@ -124,6 +134,8 @@ useEffect(() => {
 })
 ```
 
+El hook `useEffect` se ejecuta luego del render del componente, y **recibe como parámetro una función que es la que va a producir el efecto colateral**.
+
 ### Mostrando las diferencias
 
 Un detalle adicional que queremos mostrar es
@@ -136,7 +148,6 @@ const actualizarPedidos = (pedidosPendientes, nuevosPedidosPendientes) => {
   const idPedido = (pedido) => pedido.id
   const idPedidosViejos = pedidosPendientes.map(idPedido)
   const idPedidosNuevos = nuevosPedidosPendientes.map(idPedido)
-  console.info(idPedidosViejos, idPedidosNuevos)
   if (idPedidosViejos !== idPedidosNuevos) {
     const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
     const cuantosPedidosDespachados = differenceBy(idPedidosViejos, idPedidosNuevos).length

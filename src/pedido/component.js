@@ -3,7 +3,7 @@ import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Panel } from 'primereact/panel'
 import { Toast } from 'primereact/toast'
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 
 import { getPedidosPendientes } from './service'
 
@@ -12,13 +12,21 @@ export const PedidoComponent = (props) => {
   const [pedidosPendientes, setPedidosPendientes] = useState([])
   const toast = useRef(null)
 
+  const mostrarPedidosActualizados = useCallback( (nuevosPedidosPendientes) => {
+    const idPedido = (pedido) => pedido.esprettlintid
+    const cuantosPedidosNuevos = differenceBy(nuevosPedidosPendientes, pedidosPendientes, idPedido).length
+    const cuantosPedidosDespachados = differenceBy(pedidosPendientes, nuevosPedidosPendientes, idPedido).length
+    const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
+    toast.current.show({ severity: 'info', detail, closable: false })
+  }, [pedidosPendientes])
+
   useEffect(() => {
     const timerID = setInterval(
       async () => {
         try {
           console.info('Actualizando pedidos pendientes')
           const nuevosPedidosPendientes = await getPedidosPendientes()
-          mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
+          mostrarPedidosActualizados(nuevosPedidosPendientes)
           setPedidosPendientes(nuevosPedidosPendientes)
         } catch (e) {
           toast.current.show({ severity: 'error', detail: e.message })
@@ -29,15 +37,9 @@ export const PedidoComponent = (props) => {
 
     // Importante quitar el timer ya que si no se siguen agregando intervalos para disparar los pedidos pendientes
     return () => { clearInterval(timerID) }
-  })
+  }, [mostrarPedidosActualizados])
 
-  const mostrarPedidosActualizados = (pedidosPendientes, nuevosPedidosPendientes) => {
-    const idPedido = (pedido) => pedido.id
-    const cuantosPedidosNuevos = differenceBy(nuevosPedidosPendientes, pedidosPendientes, idPedido).length
-    const cuantosPedidosDespachados = differenceBy(pedidosPendientes, nuevosPedidosPendientes, idPedido).length
-    const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
-    toast.current.show({ severity: 'info', detail, closable: false })
-}
+ 
 
   // render propiamente dicho
   return (

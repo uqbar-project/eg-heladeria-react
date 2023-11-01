@@ -3,11 +3,11 @@ import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Panel } from 'primereact/panel'
 import { Toast } from 'primereact/toast'
-import React, { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 
 import { getPedidosPendientes } from './service'
 
-export const PedidoComponent = (props) => {
+export const PedidoComponent = () => {
 
   const [pedidosPendientes, setPedidosPendientes] = useState([])
   const toast = useRef(null)

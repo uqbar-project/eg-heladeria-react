@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
+    setupFiles: ["./setupTests.js"],
     environment: 'jsdom',
     coverage: {
       reporter: ['text', 'json', 'html', 'json-summary'],

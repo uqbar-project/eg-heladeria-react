@@ -37,7 +37,7 @@ export const PedidoComponent = () => {
     const cuantosPedidosDespachados = differenceBy(pedidosPendientes, nuevosPedidosPendientes, idPedido).length
     const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
     toast.current.show({ severity: 'info', detail, closable: false })
-}
+  }
 
   // render propiamente dicho
   return (

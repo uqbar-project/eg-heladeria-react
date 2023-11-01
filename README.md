@@ -120,7 +120,7 @@ useEffect(() => {
       try {
         console.info('Actualizando pedidos pendientes')
         const nuevosPedidosPendientes = await getPedidosPendientes()
-        actualizarPedidos(pedidosPendientes, nuevosPedidosPendientes)
+        mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
         setPedidosPendientes(nuevosPedidosPendientes)
       } catch (e) {
         toast.current.show({ severity: 'error', detail: e.message })
@@ -144,60 +144,54 @@ Un detalle adicional que queremos mostrar es
 - cuántos pedidos se entregaron (los que estaban anteriormente y ahora no están = Viejos - Nuevos, según la teoría de conjuntos)
 
 ```js
-const actualizarPedidos = (pedidosPendientes, nuevosPedidosPendientes) => {
+const mostrarPedidosActualizados = (pedidosPendientes, nuevosPedidosPendientes) => {
   const idPedido = (pedido) => pedido.id
-  const idPedidosViejos = pedidosPendientes.map(idPedido)
-  const idPedidosNuevos = nuevosPedidosPendientes.map(idPedido)
-  if (idPedidosViejos !== idPedidosNuevos) {
-    const cuantosPedidosNuevos = differenceBy(idPedidosNuevos, idPedidosViejos).length
-    const cuantosPedidosDespachados = differenceBy(idPedidosViejos, idPedidosNuevos).length
-    const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
-    toast.current.show({ severity: 'info', detail, closable: false })
-  }
+  const cuantosPedidosNuevos = differenceBy(nuevosPedidosPendientes, pedidosPendientes, idPedido).length
+  const cuantosPedidosDespachados = differenceBy(pedidosPendientes, nuevosPedidosPendientes, idPedido).length
+  const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
+  toast.current.show({ severity: 'info', detail, closable: false })
 }
 ```
 
-Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y viceversa (gracias a la función `differenceBy` de Lodash) y mostramos el toast si hay alguna diferencia.
+Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y viceversa (gracias a la función `differenceBy` de Lodash) y mostramos el toast en caso de que haya cambios.
 
 ## Test
 
 El test del componente
 
 - genera un stub del service, principalmente con fines didácticos, ya que no estamos realmente consultando a un servicio externo
-- por otra parte, trabaja con **fake timers** para simular que pasaron 11 segundos y verificar que efectivamente se ve la lista de pedidos (es importante limpiar esos timers en el método `afterEach`)
+- por otra parte, trabaja con **fake timers** para simular que pasaron 11 segundos y verificar que efectivamente se ve la lista de pedidos (es importante limpiar esos timers en el método `afterEach`). 
+- Un detalle adicional es que por defecto vitest se queda esperando esos 11 segundos, a menos de que explícitamente lo configuremos con la opción `vi.useFakeTimers({ shouldAdvanceTime: true })`. Esto es algo bastante desconcertante y una muy mala decisión de diseño ya que el timeout de 5 segundos hace que por defecto el test falle.
 - para testear que no hay pedidos, PrimeReact genera un div vacío cuya clase exacta estamos verificando (no es un test que tenga mucha resiliencia pero también lo mostramos con fines didácticos)
 - para testear que hay pedidos, estamos utilizando el queryByRole donde `row` hace referencia a un tag `<tr>` (lo interesante es que puede haber más de un tag html que cumpla ese rol)
 
 ```js
-jest.mock('./service')
-
 beforeEach(() => {
-  jest.useFakeTimers()
-  getPedidosPendientes.mockResolvedValue([
-    new Pedido(['pistacchio', 'dulce de leche'], 'Francia 921 - San Martín', 'Luisa Arévalo'),
-    new Pedido(['chocolate', 'crema tramontana', 'crema rusa'], 'Córdoba esq. Crámer', 'El Cholo'),
-    new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani'),
-  ])
+  vi.mock('./service', () => ({ 
+      getPedidosPendientes: () => Promise.resolve([
+        new Pedido(['pistacchio', 'dulce de leche'], 'Francia 921 - San Martín', 'Luisa Arévalo'),
+        new Pedido(['chocolate', 'crema tramontana', 'crema rusa'], 'Córdoba esq. Crámer', 'El Cholo'),
+        new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani'),
+      ])
+    })
+  )
+  vi.useFakeTimers({ shouldAdvanceTime: true })
 })
 
 afterEach(() => {
-  jest.runOnlyPendingTimers()
-  jest.useRealTimers()
+  vi.runOnlyPendingTimers()
+  vi.useRealTimers()
+  vi.clearAllMocks()
 })
 
-test('inicialmente no tenemos pedidos', () => {
-  render(<PedidoComponent />)
-  const emptyRow = screen.getAllByRole('row').find((row) => row.className === 'p-datatable-emptymessage')
-  expect(emptyRow).toBeTruthy()
-})
+...
 
 test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
+  vi.useFakeTimers()
   render(<PedidoComponent />)
-  jest.advanceTimersByTime(11000)
+  vi.advanceTimersByTime(11000)
   await waitFor(async () => {
     const allRows = screen.queryAllByRole('row')
-    // hay que considerar el encabezado
-    // es muy desagradable tener que hacer esto pero el componente DataTable no nos da data-testid
     expect(allRows.length).toBe(4)
   })
   

@@ -1,25 +1,25 @@
-import React from 'react'
-import { jest } from '@jest/globals'
 import { render, screen, waitFor } from '@testing-library/react'
 import { PedidoComponent } from './component'
 import { Pedido } from './domain'
 import './service'
-import { getPedidosPendientes } from './service'
-
-jest.mock('./service')
+import { vi } from 'vitest'
 
 beforeEach(() => {
-  jest.useFakeTimers()
-  getPedidosPendientes.mockResolvedValue([
-    new Pedido(['pistacchio', 'dulce de leche'], 'Francia 921 - San Martín', 'Luisa Arévalo'),
-    new Pedido(['chocolate', 'crema tramontana', 'crema rusa'], 'Córdoba esq. Crámer', 'El Cholo'),
-    new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani'),
-  ])
+  vi.mock('./service', () => ({ 
+      getPedidosPendientes: () => Promise.resolve([
+        new Pedido(['pistacchio', 'dulce de leche'], 'Francia 921 - San Martín', 'Luisa Arévalo'),
+        new Pedido(['chocolate', 'crema tramontana', 'crema rusa'], 'Córdoba esq. Crámer', 'El Cholo'),
+        new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani'),
+      ])
+    })
+  )
+  vi.useFakeTimers({ shouldAdvanceTime: true })
 })
 
 afterEach(() => {
-  jest.runOnlyPendingTimers()
-  jest.useRealTimers()
+  vi.runOnlyPendingTimers()
+  vi.useRealTimers()
+  vi.clearAllMocks()
 })
 
 test('inicialmente no tenemos pedidos', () => {
@@ -29,8 +29,9 @@ test('inicialmente no tenemos pedidos', () => {
 })
 
 test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
+  vi.useFakeTimers()
   render(<PedidoComponent />)
-  jest.advanceTimersByTime(11000)
+  vi.advanceTimersByTime(11000)
   await waitFor(async () => {
     const allRows = screen.queryAllByRole('row')
     // hay que considerar el encabezado

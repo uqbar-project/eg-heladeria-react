@@ -10,6 +10,7 @@ import { getPedidosPendientes } from './service'
 export const PedidoComponent = () => {
 
   const [pedidosPendientes, setPedidosPendientes] = useState([])
+
   const toast = useRef(null)
 
   useEffect(() => {

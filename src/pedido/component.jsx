@@ -1,36 +1,40 @@
-import { differenceBy } from 'lodash'
+import { useRef, useState } from 'react'
+
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Panel } from 'primereact/panel'
 import { Toast } from 'primereact/toast'
-import { useRef, useEffect, useState } from 'react'
+import { Button } from 'primereact/button'
+
+import { differenceBy } from 'lodash'
 
 import { getPedidosPendientes } from './service'
 
+// ============================================================================================
+// Para evitar el error
+// backend.bundle.js:1 Uncaught (in promise) TypeError: Converting circular structure to JSON
+// --> starting at object with constructor 'HTMLDivElement'
+JSON.stringify = () => '{}'
+//
+// ============================================================================================
+
 export const PedidoComponent = () => {
 
+  console.info('render')
   const [pedidosPendientes, setPedidosPendientes] = useState([])
 
   const toast = useRef(null)
 
-  useEffect(() => {
-    const timerID = setInterval(
-      async () => {
-        try {
-          console.info('Actualizando pedidos pendientes')
-          const nuevosPedidosPendientes = await getPedidosPendientes()
-          mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
-          setPedidosPendientes(nuevosPedidosPendientes)
-        } catch (e) {
-          toast.current.show({ severity: 'error', detail: e.message })
-        }
-      },
-      10000
-    )
-
-    // Importante quitar el timer ya que si no se siguen agregando intervalos para disparar los pedidos pendientes
-    return () => { clearInterval(timerID) }
-  })
+  const actualizarPedidos = async () => {
+    try {
+      console.info('Actualizando pedidos pendientes')
+      const nuevosPedidosPendientes = await getPedidosPendientes()
+      mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
+      setPedidosPendientes(nuevosPedidosPendientes)
+    } catch (e) {
+      toast.current.show({ severity: 'error', detail: e.message })
+    }
+  }
 
   const mostrarPedidosActualizados = (pedidosPendientes, nuevosPedidosPendientes) => {
     const idPedido = (pedido) => pedido.id
@@ -48,6 +52,8 @@ export const PedidoComponent = () => {
         <Column field="direccion" header="Domicilio de entrega" sortable></Column>
         <Column field="gustosPedidos" header="Gustos"></Column>
       </DataTable>
+      <br/>
+      <Button data-testid="actualizar" label="Actualizar pedidos" severity="help" rounded icon="pi pi-refresh" onClick={ () => { actualizarPedidos() } }/>
       <Toast ref={toast}></Toast>
     </Panel>
   )

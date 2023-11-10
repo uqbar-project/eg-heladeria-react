@@ -13,13 +13,6 @@ beforeEach(() => {
       ])
     })
   )
-  vi.useFakeTimers({ shouldAdvanceTime: true })
-})
-
-afterEach(() => {
-  vi.runOnlyPendingTimers()
-  vi.useRealTimers()
-  vi.clearAllMocks()
 })
 
 test('inicialmente no tenemos pedidos', () => {
@@ -29,9 +22,8 @@ test('inicialmente no tenemos pedidos', () => {
 })
 
 test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
-  vi.useFakeTimers()
   render(<PedidoComponent />)
-  vi.advanceTimersByTime(11000)
+  screen.getByTestId('actualizar').click()
   await waitFor(async () => {
     const allRows = screen.queryAllByRole('row')
     // hay que considerar el encabezado

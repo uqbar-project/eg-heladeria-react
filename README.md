@@ -5,9 +5,9 @@
 
 La aplicación consiste en modelar los pedidos para una heladería:
 
-![demo](./images/demo.gif)
+![demo](./images/demoButton.gif)
 
-Y en este ejemplo vamos a conocer el hook [`useEffect`](https://reactjs.org/docs/hooks-effect.html), asociado al ciclo de vida de los componentes de React.
+Y en este ejemplo vamos a ver cómo invocar una función asincrónica, y su asociación con el ciclo de vida de los componentes de React.
 
 ## Arquitectura general de la aplicación
 
@@ -17,9 +17,9 @@ En esta solución participan
 
 - el objeto de dominio Helado
 - una función asincrónica que simula pedidos pendientes
-- y el componente React
+- y el componente React que tiene un botón que los dispara
 
-Dado que nuestro componente es una función, no podemos producir efectos colaterales (o "efectos"). De hecho si utilizáramos la variante con clases tampoco podemos hacerlo dentro de la función `render()` porque es cuando se están definiendo los elementos de nuestro DOM. En lugar de eso, **cada cierto tiempo, debemos disparar periódicamente la consulta al servicio para obtener los pedidos pendientes**. Esto lo vamos a resolver mediante el hook `useEffect` que terminará generando un nuevo estado (`setPedidosPendientes`).
+Dado que nuestro componente es una función, no podemos producir efectos colaterales (o "efectos"). De hecho si utilizáramos la variante con clases tampoco podemos hacerlo dentro de la función `render()` porque es cuando se están definiendo los elementos de nuestro DOM. 
 
 ## Dominio
 
@@ -35,24 +35,6 @@ La función `getPedidosPendientes` exportada es asincrónica, ya que la intenci�
 
 - aleatoriamente marcar/desmarcar pedidos como entregados o pendientes, para forzar un cambio en la lista de pedidos pendientes de la heladería
 - devolver la lista con los pedidos pendientes
-
-```js
-const cambiarEstadoPedidos = () => {
-  pedidos.forEach((pedido) => {
-    const random = Math.random() * 10 + 1
-    if (random > 5) {
-      pedido.entregar()
-    } else {
-      pedido.cancelar()
-    }
-  })
-}
-
-export const getPedidosPendientes = async () => {
-  cambiarEstadoPedidos()
-  return pedidos.filter((pedido) => pedido.estaPendiente())
-}
-```
 
 ## Componente React
 
@@ -97,44 +79,9 @@ Fíjense además que la definición del Toast hace referencia a nuestra variable
 
 ![React Lifecycle Methods](./images/ReactLifecycleHooks2.png)
 
-### Component did mount / Component did update => hook useEffect
+## Disparando la consulta
 
-Cuando nuestro componente comience, disparamos cada _x_ segundos la llamada asincrónica que obtiene los pedidos pendientes. Originalmente esto se hacía de esta manera:
-
-```js
-  componentDidMount() {
-    console.log('component did mount')
-    this.timerID = setInterval(
-      () => this.actualizarPedidosPendientes(),
-      10000
-    )
-  }
-```
-
-El hook `useEffect` nos permite lograr el mismo efecto:
-
-```jsx
-useEffect(() => {
-  const timerID = setInterval(
-    async () => {
-      try {
-        console.info('Actualizando pedidos pendientes')
-        const nuevosPedidosPendientes = await getPedidosPendientes()
-        mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
-        setPedidosPendientes(nuevosPedidosPendientes)
-      } catch (e) {
-        toast.current.show({ severity: 'error', detail: e.message })
-      }
-    },
-    10000
-  )
-
-  // Importante quitar el timer ya que si no se siguen agregando intervalos para disparar los pedidos pendientes
-  return () => { clearInterval(timerID) }
-})
-```
-
-El hook `useEffect` se ejecuta luego del render del componente, y **recibe como parámetro una función que es la que va a producir el efecto colateral**.
+Para disparar la consulta tenemos un botón que llama a una función que **actualiza el estado**, generando así un nuevo render.
 
 ### Mostrando las diferencias
 
@@ -143,16 +90,6 @@ Un detalle adicional que queremos mostrar es
 - cuántos pedidos nuevos hay (los que no estaban anteriormente y ahora aparecen = Nuevos - Viejos, según la teoría de conjuntos)
 - cuántos pedidos se entregaron (los que estaban anteriormente y ahora no están = Viejos - Nuevos, según la teoría de conjuntos)
 
-```js
-const mostrarPedidosActualizados = (pedidosPendientes, nuevosPedidosPendientes) => {
-  const idPedido = (pedido) => pedido.id
-  const cuantosPedidosNuevos = differenceBy(nuevosPedidosPendientes, pedidosPendientes, idPedido).length
-  const cuantosPedidosDespachados = differenceBy(pedidosPendientes, nuevosPedidosPendientes, idPedido).length
-  const detail = `Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`
-  toast.current.show({ severity: 'info', detail, closable: false })
-}
-```
-
 Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y viceversa (gracias a la función `differenceBy` de Lodash) y mostramos el toast en caso de que haya cambios.
 
 ## Test
@@ -160,8 +97,6 @@ Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y vice
 El test del componente
 
 - genera un stub del service, principalmente con fines didácticos, ya que no estamos realmente consultando a un servicio externo
-- por otra parte, trabaja con **fake timers** para simular que pasaron 11 segundos y verificar que efectivamente se ve la lista de pedidos (es importante limpiar esos timers en el método `afterEach`). 
-- Un detalle adicional es que por defecto vitest se queda esperando esos 11 segundos, a menos de que explícitamente lo configuremos con la opción `vi.useFakeTimers({ shouldAdvanceTime: true })`. Esto es algo bastante desconcertante y una muy mala decisión de diseño ya que el timeout de 5 segundos hace que por defecto el test falle.
 - para testear que no hay pedidos, PrimeReact genera un div vacío cuya clase exacta estamos verificando (no es un test que tenga mucha resiliencia pero también lo mostramos con fines didácticos)
 - para testear que hay pedidos, estamos utilizando el queryByRole donde `row` hace referencia a un tag `<tr>` (lo interesante es que puede haber más de un tag html que cumpla ese rol)
 
@@ -175,27 +110,19 @@ beforeEach(() => {
       ])
     })
   )
-  vi.useFakeTimers({ shouldAdvanceTime: true })
-})
-
-afterEach(() => {
-  vi.runOnlyPendingTimers()
-  vi.useRealTimers()
-  vi.clearAllMocks()
 })
 
 ...
 
 test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
-  vi.useFakeTimers()
   render(<PedidoComponent />)
-  vi.advanceTimersByTime(11000)
+  screen.getByTestId('actualizar').click()
   await waitFor(async () => {
     const allRows = screen.queryAllByRole('row')
-    expect(allRows.length).toBe(4)
+    // hay que considerar el encabezado
+    // es muy feo tener que hacer esto pero el componente DataTable no nos da data-testid
+    expect(allRows.length).toBe(4)  
   })
-  
-})
 ```
 
 ## Bibliografía adicional

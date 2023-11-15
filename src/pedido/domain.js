@@ -1,4 +1,4 @@
-import { formatearGusto } from '../util/strings'
+import { formatearGusto } from "src/util/strings"
 
 var lastId = 1
 

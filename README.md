@@ -86,10 +86,6 @@ setTimeout(() => {
 
 > Pregunta para el lector: al hacer setDetail, ¿es necesario renderizar la lista de pedidos nuevamente o solamente se elimina el mensaje del toast?
 
-### Eventos del componente
-
-![React Lifecycle Methods](./images/ReactLifecycleHooks2.png)
-
 ## Disparando la consulta
 
 Para disparar la consulta tenemos un botón que llama a una función que **actualiza el estado**, generando así un nuevo render.

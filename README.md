@@ -1,5 +1,5 @@
 
-[![Build React App](https://github.com/uqbar-project/eg-heladeria-react/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/uqbar-project/eg-heladeria-react/actions/workflows/build.yml) ![coverage](./badges/coverage/coverage.svg)
+[![Build React App](https://github.com/uqbar-project/eg-heladeria-react/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/uqbar-project/eg-heladeria-react/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/uqbar-project/eg-heladeria-react/graph/badge.svg?token=WMJW26VV8C)](https://codecov.io/gh/uqbar-project/eg-heladeria-react)
 
 ## Ejemplo - Ciclo de vida de un componente React
 

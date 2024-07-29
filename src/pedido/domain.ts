@@ -1,14 +1,11 @@
-import { formatearGusto } from "src/util/strings"
+import { formatearGusto } from "../util/strings"
 
-var lastId = 1
+let lastId = 1
 
 export class Pedido {
+  id: number
 
-  constructor(gustos = [], direccion = '', cliente = '', despachado = false) {
-    this.gustos = gustos
-    this.direccion = direccion
-    this.cliente = cliente
-    this.despachado = despachado
+  constructor(private gustos: string[] = [], public direccion = '', public cliente = '', private despachado = false) {
     this.id = lastId++
   }
 

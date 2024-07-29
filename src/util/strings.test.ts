@@ -1,3 +1,4 @@
+import { expect, test } from "vitest"
 import { formatearGusto } from "./strings"
 
 test('formatear un gusto', () => {

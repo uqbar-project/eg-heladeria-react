@@ -1,0 +1,43 @@
+* {
+  box-sizing: border-box;
+}
+
+.main {
+  margin: 0.5rem;
+}
+
+.pedidos {
+  padding: 0;
+  width: calc(100vw - 1rem);
+}
+
+.header {
+  border: solid 1px gray;
+  background-color: rgb(168, 218, 233);
+  font-weight: bold;
+}
+
+.header, .pedidoRow {
+  display: grid;
+  grid-template-columns: 2fr 2fr 3fr;
+  gap: 10px;
+  margin: 0.5em 0;
+  padding: 0.25rem 0.25rem;
+}
+
+.actualizar {
+  background-color: steelblue;
+  border-color: steelblue;
+  color: white;
+}
+
+.toast {
+  background-color: cadetblue;
+  color: white;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.toast.error {
+  background-color: brown;
+}

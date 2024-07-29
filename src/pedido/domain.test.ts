@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import { Pedido } from './domain'
 
 test('un pedido inicialmente está pendiente', () => {
@@ -22,10 +23,6 @@ test('los pedidos concatenan los gustos en orden', () => {
   expect(pedido.gustosPedidos).toBe('Vainilla, Limón, Frutilla')
 })
 
-function getPedidoDefault() {
-  return new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani')
-}
+const getPedidoDefault = () => new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani')
 
-function getPedidoEntregado() {
-  return new Pedido(['dulce de leche', 'chocolate'], 'Murguiondo 1519', 'Camila Fusani', true)
-}
+const getPedidoEntregado = () => new Pedido(['dulce de leche', 'chocolate'], 'Murguiondo 1519', 'Camila Fusani', true)

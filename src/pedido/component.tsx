@@ -59,8 +59,8 @@ export const PedidoComponent = () => {
           <div>Domicilio de entrega</div>
           <div>Gustos</div>
         </div>
-        {pedidosPendientes.map((pedido: Pedido, i: number) => {
-          return <PedidoRow pedido={pedido} key={'pedido' + i}/>
+        {pedidosPendientes.map((pedido: Pedido) => {
+          return <PedidoRow pedido={pedido} key={pedido.id}/>
         })}
         {isEmpty(pedidosPendientes) && 
           <>

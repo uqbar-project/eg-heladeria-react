@@ -1,10 +1,9 @@
 import './component.css'  
 import { useState } from 'react'
 
-import { differenceBy, isEmpty } from 'lodash'
-
 import { getPedidosPendientes } from './service'
 import { Pedido } from './domain'
+import { differenceBy, isEmpty } from '../util/sets'
 
 // Muestra la información de un pedido
 const PedidoRow = ({ pedido }: { pedido: Pedido }) => {

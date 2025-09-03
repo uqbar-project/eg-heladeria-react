@@ -1,4 +1,4 @@
-export const differenceBy = <T, U> (
+export const differenceBy = <T, U>(
   array: T[],
   values: T[],
   iteratee: (item: T) => U

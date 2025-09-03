@@ -24,7 +24,6 @@ test('inicialmente no tenemos pedidos', () => {
 
 test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
   render(<PedidoComponent />)
-  screen.getByTestId('actualizar').click()
   await waitFor(async () => {
     const allRows = screen.queryAllByTestId('row')
     expect(allRows.length).toBe(3)

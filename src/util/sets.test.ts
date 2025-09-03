@@ -10,15 +10,15 @@ describe('helpers de set', () => {
 
   test('differenceBy de una lista de personas deja solo los nombres que están en el primer conjunto y no en el segundo', () => {
       expect(differenceBy([
-          new Persona("Enrique"),
-          new Persona("Flavia"),
-          new Persona("Claudia")
+          new Persona('Enrique'),
+          new Persona('Flavia'),
+          new Persona('Claudia')
       ], [
-          new Persona("enrique"),
-          new Persona("Mabel"),
-          new Persona("Michele")
+          new Persona('enrique'),
+          new Persona('Mabel'),
+          new Persona('Michele')
       ],
-      (persona: Persona) => persona.nombrePiola())).toEqual([new Persona("Flavia"), new Persona("Claudia")])
+      (persona: Persona) => persona.nombrePiola())).toEqual([new Persona('Flavia'), new Persona('Claudia')])
   })
   
   describe('isEmpty', () => {

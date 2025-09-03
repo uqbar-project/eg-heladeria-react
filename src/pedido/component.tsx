@@ -1,54 +1,49 @@
-import './component.css'  
-import { useState } from 'react'
-
+import './component.css'
+import { useState, useRef } from 'react'
 import { getPedidosPendientes } from './service'
 import { Pedido } from './domain'
 import { differenceBy, isEmpty } from '../util/sets'
 
-// Muestra la información de un pedido
-const PedidoRow = ({ pedido }: { pedido: Pedido }) => {
-  return (<>
+const PedidoRow = ({ pedido }: { pedido: Pedido }) => (
+  <>
     <div className="pedidoRow" data-testid="row">
       <div>{pedido.cliente}</div>
       <div>{pedido.direccion}</div>
       <div>{pedido.gustosPedidos}</div>
     </div>
-    <hr></hr>
-  </>)
-}
-  
-// Componente principal
+    <hr />
+  </>
+)
+
 export const PedidoComponent = () => {
-  console.info('render')
   const [pedidosPendientes, setPedidosPendientes] = useState<Pedido[]>([])
   const [detail, setDetail] = useState<string>('')
 
+  const intervalRef = useRef<number | null>(null)
+
   const actualizarPedidos = async () => {
     try {
-      console.info('Actualizando pedidos pendientes')
       const nuevosPedidosPendientes = await getPedidosPendientes()
-      console.info('pedidos nuevos', nuevosPedidosPendientes)
       mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
       setPedidosPendientes(nuevosPedidosPendientes)
     } catch (e: unknown) {
-      console.error(e)
       setDetail((e as Error).message)
     }
   }
 
-  // Eliminamos el Toast a los 10 segundos
-  setTimeout(() => {
-    setDetail('')
-  }, 10000)
-
-  const mostrarPedidosActualizados = (pedidosPendientes: Pedido[], nuevosPedidosPendientes: Pedido[]) => {
+  const mostrarPedidosActualizados = (oldList: Pedido[], newList: Pedido[]) => {
     const idPedido = (pedido: Pedido) => pedido.id
-    const cuantosPedidosNuevos = differenceBy(nuevosPedidosPendientes, pedidosPendientes, idPedido).length
-    const cuantosPedidosDespachados = differenceBy(pedidosPendientes, nuevosPedidosPendientes, idPedido).length
-    setDetail(`Pedidos nuevos: ${cuantosPedidosNuevos}, Pedidos despachados: ${cuantosPedidosDespachados}`)
+    const nuevos = differenceBy(newList, oldList, idPedido).length
+    const despachados = differenceBy(oldList, newList, idPedido).length
+    setDetail(`Pedidos nuevos: ${nuevos}, Pedidos despachados: ${despachados}`)
   }
 
-  // render propiamente dicho
+  // Disparar polling automáticamente
+  if (!intervalRef.current) {
+    intervalRef.current = setInterval(actualizarPedidos, 5000)
+    actualizarPedidos()
+  }
+
   return (
     <div className="main">
       <h3>Pedidos</h3>
@@ -58,20 +53,15 @@ export const PedidoComponent = () => {
           <div>Domicilio de entrega</div>
           <div>Gustos</div>
         </div>
-        {pedidosPendientes.map((pedido: Pedido) => {
-          return <PedidoRow pedido={pedido} key={pedido.id}/>
-        })}
-        {isEmpty(pedidosPendientes) && 
+        {pedidosPendientes.map(p => <PedidoRow pedido={p} key={p.id} />)}
+        {isEmpty(pedidosPendientes) && (
           <>
             <span data-testid="no-rows">No hay pedidos pendientes</span>
-            <hr/>
+            <hr />
           </>
-        }
+        )}
       </div>
-      <br/>
-      <button className="actualizar" data-testid="actualizar" onClick={ () => { actualizarPedidos() } }>Actualizar pedidos</button>
       {detail && <div className="toast">{detail}</div>}
     </div>
   )
-
 }

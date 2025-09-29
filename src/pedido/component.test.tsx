@@ -28,5 +28,4 @@ test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
     const allRows = screen.queryAllByTestId('row')
     expect(allRows.length).toBe(3)
   })
-  
 })

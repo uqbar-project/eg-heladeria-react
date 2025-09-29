@@ -24,8 +24,10 @@ export const PedidoComponent = () => {
   const actualizarPedidos = async () => {
     try {
       const nuevosPedidosPendientes = await getPedidosPendientes()
-      mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
-      setPedidosPendientes(nuevosPedidosPendientes)
+      setPedidosPendientes(oldPedidos => {
+        mostrarPedidosActualizados(oldPedidos, nuevosPedidosPendientes)
+        return nuevosPedidosPendientes
+      })
     } catch (e: unknown) {
       setDetail((e as Error).message)
     }
@@ -38,9 +40,8 @@ export const PedidoComponent = () => {
     setDetail(`Pedidos nuevos: ${nuevos}, Pedidos despachados: ${despachados}`)
   }
 
-  // Disparar polling automáticamente
   if (!intervalRef.current) {
-    intervalRef.current = setInterval(actualizarPedidos, 5000)
+    intervalRef.current = window.setInterval(actualizarPedidos, 5000)
     actualizarPedidos()
   }
 
@@ -53,7 +54,7 @@ export const PedidoComponent = () => {
           <div>Domicilio de entrega</div>
           <div>Gustos</div>
         </div>
-        {pedidosPendientes.map(p => <PedidoRow pedido={p} key={p.id} />)}
+        {pedidosPendientes.map(pedido => <PedidoRow pedido={pedido} key={pedido.id} />)}
         {isEmpty(pedidosPendientes) && (
           <>
             <span data-testid="no-rows">No hay pedidos pendientes</span>

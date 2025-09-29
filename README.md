@@ -5,7 +5,7 @@
 
 La aplicación consiste en modelar los pedidos para una heladería:
 
-![demo](./images/demo2024.gif)
+![demo](./images/demo2025.gif)
 
 Y en este ejemplo vamos a ver cómo invocar una función asincrónica, y su asociación con el ciclo de vida de los componentes de React.
 
@@ -17,7 +17,7 @@ En esta solución participan
 
 - el objeto de dominio Helado
 - una función asincrónica que simula pedidos pendientes
-- y el componente React que tiene un botón que los dispara
+- y el componente React que a intervalos regulares dispara la consulta
 
 Dado que nuestro componente es una función, no podemos producir efectos colaterales (o "efectos"). De hecho si utilizáramos la variante con clases tampoco podemos hacerlo dentro de la función `render()` porque es cuando se están definiendo los elementos de nuestro DOM. 
 
@@ -40,10 +40,11 @@ La función `getPedidosPendientes` exportada es asincrónica, ya que la intenci�
 
 ### Estado
 
-- Necesitamos que nuestro componente reaccione ante los cambios en los pedidos pendientes, por eso formará parte de nuestro estado.
-- Además vamos a guardar un string que será un mensaje al usuario al actualizar satisfactoriamente los pedidos o bien un mensaje de error.
+- El componente necesita mantener los pedidos actuales como estado
+- Para visualizar en un detalle la cantidad de pedidos nuevos y despachados utilizaremos una etiqueta especial (el detalle)
 
-```jsx
+
+```tsx
 const [pedidosPendientes, setPedidosPendientes] = useState<Pedido[]>([])
 const [detail, setDetail] = useState<string>('')
 ```
@@ -62,9 +63,7 @@ return (
         <div>Domicilio de entrega</div>
         <div>Gustos</div>
       </div>
-      {pedidosPendientes.map((pedido: Pedido, i: number) => {
-        return <PedidoRow pedido={pedido} key={'pedido' + i}/>
-      })}
+      {pedidosPendientes.map(pedido => <PedidoRow pedido={pedido} key={pedido.id} />)}
     </div>
 ```
 
@@ -72,23 +71,27 @@ Un detalle importante es que cada elemento React debe tener una clave única que
 
 Además tenemos el toast implementado como un div que se muestra _condicionalmente_ si el estado `detail` tiene un valor:
 
-```jsx
+```tsx
 {detail && <div className="toast">{detail}</div>}
 ```
 
-Dentro del render definimos una lambda que a los 10 segundos borra el mensaje del toast:
+### Disparando la consulta
+
+Dentro del render definimos una lambda que busca los pedidos pendientes cada 5 segundos:
 
 ```ts
-setTimeout(() => {
-  setDetail('')
-}, 10000)
+const intervalRef = useRef<number | null>(null)
+
+...
+
+// Disparar polling automáticamente solo la primera vez
+if (!intervalRef.current) {
+  intervalRef.current = setInterval(actualizarPedidos, 5000)
+  actualizarPedidos()
+}
 ```
 
-> Pregunta para el lector: al hacer setDetail, ¿es necesario renderizar la lista de pedidos nuevamente o solamente se elimina el mensaje del toast?
-
-## Disparando la consulta
-
-Para disparar la consulta tenemos un botón que llama a una función que **actualiza el estado**, generando así un nuevo render.
+<img src="./images/setInterval.gif" alt="set interval" height="auto" width="40%"/>
 
 ### Mostrando las diferencias
 
@@ -97,7 +100,9 @@ Un detalle adicional que queremos mostrar es
 - cuántos pedidos nuevos hay (los que no estaban anteriormente y ahora aparecen = Nuevos - Viejos, según la teoría de conjuntos)
 - cuántos pedidos se entregaron (los que estaban anteriormente y ahora no están = Viejos - Nuevos, según la teoría de conjuntos)
 
-Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y viceversa (gracias a la función `differenceBy` de Lodash) y mostramos el toast en caso de que haya cambios.
+![sets difference](./images/differenceSets.png)
+
+Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y viceversa (gracias a la función `differenceBy` que construimos nosotros, podríamos haberla importado de Lodash, pero una decisión que tomamos fue minimizar las dependencias) y mostramos el toast en caso de que haya cambios.
 
 ## Test
 
@@ -128,15 +133,15 @@ test('inicialmente no tenemos pedidos', () => {
 
 test('cuando se actualiza el servidor aparecen nuevos pedidos', async () => {
   render(<PedidoComponent />)
-  screen.getByTestId('actualizar').click()
   await waitFor(async () => {
     const allRows = screen.queryAllByTestId('row')
     expect(allRows.length).toBe(3)
   })
-  
 })
 ```
 
-## Bibliografía adicional
+## Material adicional
 
-- [Estado y ciclo de vida de los componentes de React](https://es.reactjs.org/docs/state-and-lifecycle.html)
+- [Manejo de estado en React](https://es.react.dev/learn/state-a-components-memory)
+- [Documentación de setInterval](https://developer.mozilla.org/en-US/docs/Web/API/Window/setInterval)
+- [(Deprecado) Estado y ciclo de vida de los componentes de React](https://es.reactjs.org/docs/state-and-lifecycle.html)

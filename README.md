@@ -100,6 +100,58 @@ Un detalle adicional que queremos mostrar es
 - cuántos pedidos nuevos hay (los que no estaban anteriormente y ahora aparecen = Nuevos - Viejos, según la teoría de conjuntos)
 - cuántos pedidos se entregaron (los que estaban anteriormente y ahora no están = Viejos - Nuevos, según la teoría de conjuntos)
 
+Tenemos que obtener la lista actual de pedidos y la vieja, podríamos pensar en implementarlo así
+
+```ts
+const actualizarPedidos = async () => {
+    try {
+      const nuevosPedidosPendientes = await getPedidosPendientes()
+      mostrarPedidosActualizados(pedidosPendientes, nuevosPedidosPendientes)
+      setPedidosPendientes(nuevosPedidosPendientes)
+    } catch (e: unknown) {
+      setDetail((e as Error).message)
+    }
+  }
+```
+
+Pero cuando pasamos la función `actualizarPedidos` en setInterval:
+
+```ts
+  if (!intervalRef.current) {
+    intervalRef.current = window.setInterval(actualizarPedidos, 5000)
+    actualizarPedidos()
+  }
+```
+
+obtiene el valor de `pedidosPendientes` y **no es reactivo**, por lo tanto nos va a aparecer siempre que **todos los pedidos son nuevos**.
+
+Como alternativa tenemos que aprovechar la función setter que nos devuelve el hook useState, ya que el parámetro que recibimos es el valor actual. Entonces generaremos el detalle en ese momento, cuando estamos actualizando los nuevos pedidos pendientes:
+
+```ts
+  const actualizarPedidos = async () => {
+    try {
+      const nuevosPedidosPendientes = await getPedidosPendientes()
+      setPedidosPendientes(oldPedidos => {
+        mostrarPedidosActualizados(oldPedidos, nuevosPedidosPendientes)
+        return nuevosPedidosPendientes
+      })
+    } catch (e: unknown) {
+      setDetail((e as Error).message)
+    }
+  }
+```
+
+### Diferencia de conjuntos
+
+```ts
+  const mostrarPedidosActualizados = (oldList: Pedido[], newList: Pedido[]) => {
+    const idPedido = (pedido: Pedido) => pedido.id
+    const nuevos = differenceBy(newList, oldList, idPedido).length
+    const despachados = differenceBy(oldList, newList, idPedido).length
+    setDetail(`Pedidos nuevos: ${nuevos}, Pedidos despachados: ${despachados}`)
+  }
+```
+
 ![sets difference](./images/differenceSets.png)
 
 Aquí resolvemos la diferencia de conjuntos entre los nuevos y los viejos y viceversa (gracias a la función `differenceBy` que construimos nosotros, podríamos haberla importado de Lodash, pero una decisión que tomamos fue minimizar las dependencias) y mostramos el toast en caso de que haya cambios.

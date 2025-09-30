@@ -91,7 +91,7 @@ if (!intervalRef.current) {
 }
 ```
 
-<img src="./images/setInterval.gif" alt="set interval" height="auto" width="40%"/>
+<img src="./images/setInterval.gif" alt="set interval" height="auto" width="20%"/>
 
 ### Mostrando las diferencias
 

@@ -23,6 +23,17 @@ test('los pedidos concatenan los gustos en orden', () => {
   expect(pedido.gustosPedidos).toBe('Vainilla, Limón, Frutilla')
 })
 
-const getPedidoDefault = () => new Pedido(['vainilla', 'limón', 'frutilla'], 'Murguiondo 1519', 'Camila Fusani')
+const getPedidoDefault = () =>
+  new Pedido(
+    ['vainilla', 'limón', 'frutilla'],
+    'Murguiondo 1519',
+    'Camila Fusani'
+  )
 
-const getPedidoEntregado = () => new Pedido(['dulce de leche', 'chocolate'], 'Murguiondo 1519', 'Camila Fusani', true)
+const getPedidoEntregado = () =>
+  new Pedido(
+    ['dulce de leche', 'chocolate'],
+    'Murguiondo 1519',
+    'Camila Fusani',
+    true
+  )

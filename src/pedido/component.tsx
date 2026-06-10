@@ -1,8 +1,8 @@
 import './component.css'
-import { useState, useRef } from 'react'
-import { getPedidosPendientes } from './service'
-import { Pedido } from './domain'
+import { useRef, useState } from 'react'
 import { differenceBy, isEmpty } from '../util/sets'
+import type { Pedido } from './domain'
+import { getPedidosPendientes } from './service'
 
 const PedidoRow = ({ pedido }: { pedido: Pedido }) => (
   <>
@@ -24,7 +24,7 @@ export const PedidoComponent = () => {
   const actualizarPedidos = async () => {
     try {
       const nuevosPedidosPendientes = await getPedidosPendientes()
-      setPedidosPendientes(oldPedidos => {
+      setPedidosPendientes((oldPedidos) => {
         mostrarPedidosActualizados(oldPedidos, nuevosPedidosPendientes)
         return nuevosPedidosPendientes
       })
@@ -54,7 +54,9 @@ export const PedidoComponent = () => {
           <div>Domicilio de entrega</div>
           <div>Gustos</div>
         </div>
-        {pedidosPendientes.map(pedido => <PedidoRow pedido={pedido} key={pedido.id} />)}
+        {pedidosPendientes.map((pedido) => (
+          <PedidoRow pedido={pedido} key={pedido.id} />
+        ))}
         {isEmpty(pedidosPendientes) && (
           <>
             <span data-testid="no-rows">No hay pedidos pendientes</span>

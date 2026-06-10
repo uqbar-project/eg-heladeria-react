@@ -5,7 +5,12 @@ let lastId = 1
 export class Pedido {
   id: number
 
-  constructor(private gustos: string[] = [], public direccion = '', public cliente = '', private despachado = false) {
+  constructor(
+    private gustos: string[] = [],
+    public direccion = '',
+    public cliente = '',
+    private despachado = false
+  ) {
     this.id = lastId++
   }
 
@@ -25,4 +30,3 @@ export class Pedido {
     return this.gustos.map((gusto) => formatearGusto(gusto)).join(', ')
   }
 }
-

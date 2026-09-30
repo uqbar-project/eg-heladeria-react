@@ -5,5 +5,5 @@ import App from './App'
 test('smoke test de la app', () => {
   render(<App />)
   const pedidosElement = screen.getByText('Pedidos')
-  expect(pedidosElement).toBeTruthy()
+  expect(pedidosElement).toBeInTheDocument()
 })

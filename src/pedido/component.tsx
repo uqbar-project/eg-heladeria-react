@@ -5,30 +5,31 @@ import type { Pedido } from './domain'
 import { getPedidosPendientes } from './service'
 
 const PedidoRow = ({ pedido }: { pedido: Pedido }) => (
-  <>
-    <div className="pedidoRow" data-testid="row">
-      <div>{pedido.cliente}</div>
-      <div>{pedido.direccion}</div>
-      <div>{pedido.gustosPedidos}</div>
-    </div>
-  </>
+  <tr className="pedidoRow" data-testid="row">
+    <td>{pedido.cliente}</td>
+    <td>{pedido.direccion}</td>
+    <td>{pedido.gustosPedidos}</td>
+  </tr>
 )
 
 export const PedidoComponent = () => {
   const [pedidosPendientes, setPedidosPendientes] = useState<Pedido[]>([])
   const [detail, setDetail] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
 
   const intervalRef = useRef<number | null>(null)
 
   const actualizarPedidos = async () => {
     try {
       const nuevosPedidosPendientes = await getPedidosPendientes()
+      setError(null)
       setPedidosPendientes((oldPedidos) => {
         mostrarPedidosActualizados(oldPedidos, nuevosPedidosPendientes)
         return nuevosPedidosPendientes
       })
     } catch (e: unknown) {
-      setDetail((e as Error).message)
+      setError((e as Error).message)
+      setDetail('')
     }
   }
 
@@ -43,6 +44,8 @@ export const PedidoComponent = () => {
     intervalRef.current = window.setInterval(actualizarPedidos, 5000)
     actualizarPedidos()
   }
+
+  const mensaje = error ?? detail
 
   return (
     <>
@@ -63,14 +66,20 @@ export const PedidoComponent = () => {
           </div>
         </section>
         <div className="pedidos">
-          <div className="header">
-            <div>Cliente</div>
-            <div>Domicilio de entrega</div>
-            <div>Gustos</div>
-          </div>
-          {pedidosPendientes.map((pedido) => (
-            <PedidoRow pedido={pedido} key={pedido.id} />
-          ))}
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Cliente</th>
+                <th scope="col">Domicilio de entrega</th>
+                <th scope="col">Gustos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pedidosPendientes.map((pedido) => (
+                <PedidoRow pedido={pedido} key={pedido.id} />
+              ))}
+            </tbody>
+          </table>
           {isEmpty(pedidosPendientes) && (
             <div className="empty-state">
               <span className="empty-mark" aria-hidden="true">
@@ -82,9 +91,9 @@ export const PedidoComponent = () => {
           )}
         </div>
       </div>
-      {detail && (
-        <div className="toast" role="status">
-          {detail}
+      {mensaje && (
+        <div className={error ? 'toast error' : 'toast'} role="status">
+          {mensaje}
         </div>
       )}
     </>

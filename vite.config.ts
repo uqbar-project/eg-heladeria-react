@@ -10,12 +10,12 @@ export default defineConfig({
   resolve: {
     alias: {
       src: '/src',
-      components: '/src/components',
     },
   },
   test: {
     globals: true,
     environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
     coverage: {
       exclude: ['./src/main.tsx', '**/*.cjs', '**/*.d.ts', 'vite.config.ts'],
       reporter: ['lcov', 'json', 'html', 'json-summary'],

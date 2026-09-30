@@ -56,38 +56,51 @@
   background: var(--paper);
 }
 
-.header {
+.pedidos table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.pedidos th:nth-child(1) {
+  width: 27%;
+}
+
+.pedidos th:nth-child(2),
+.pedidos th:nth-child(3) {
+  width: 36.5%;
+}
+
+.pedidos thead th {
   border-bottom: 1px solid var(--line);
   background: #e7f0e9;
   color: #52675b;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
+  padding: 0.75rem 1rem;
+  text-align: left;
   text-transform: uppercase;
 }
 
-.header,
 .pedidoRow {
-  display: grid;
-  grid-template-columns: 1.1fr 1.5fr 1.5fr;
-  gap: 1.25rem;
-  padding: 0.75rem 1rem;
-}
-
-.pedidoRow {
-  align-items: center;
-  min-height: 54px;
-  border-bottom: 1px solid #edf0eb;
-  color: var(--ink);
-  font-size: 0.9rem;
+  height: 54px;
   animation: arrive 300ms ease-out both;
 }
 
-.pedidoRow > div:first-child {
+.pedidoRow td {
+  border-bottom: 1px solid #edf0eb;
+  padding: 0.75rem 1rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.pedidoRow td:first-child {
   font-weight: 700;
 }
 
-.pedidoRow > div:last-child {
+.pedidoRow td:last-child {
   color: #637168;
 }
 
@@ -187,19 +200,17 @@
     white-space: normal;
   }
 
-  .header,
-  .pedidoRow {
-    grid-template-columns: 1fr 1.2fr 1.2fr;
-    gap: 0.6rem;
+  .pedidos thead th,
+  .pedidoRow td {
     padding: 0.85rem 0.7rem;
   }
 
-  .header {
+  .pedidos thead th {
     font-size: 0.57rem;
     letter-spacing: 0.06em;
   }
 
-  .pedidoRow {
+  .pedidoRow td {
     font-size: 0.78rem;
     overflow-wrap: anywhere;
   }

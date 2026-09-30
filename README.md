@@ -5,7 +5,7 @@
 
 La aplicación consiste en modelar los pedidos para una heladería:
 
-![demo](./images/demo2025.gif)
+![demo](./images/heladeria-react.gif)
 
 Y en este ejemplo vamos a ver cómo invocar una función asincrónica, y su asociación con el ciclo de vida de los componentes de React.
 

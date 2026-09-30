@@ -1,6 +1,6 @@
-import './component.css'
 import { useRef, useState } from 'react'
 import { differenceBy, isEmpty } from '../util/sets'
+import './component.css'
 import type { Pedido } from './domain'
 import { getPedidosPendientes } from './service'
 
@@ -11,7 +11,6 @@ const PedidoRow = ({ pedido }: { pedido: Pedido }) => (
       <div>{pedido.direccion}</div>
       <div>{pedido.gustosPedidos}</div>
     </div>
-    <hr />
   </>
 )
 
@@ -46,25 +45,44 @@ export const PedidoComponent = () => {
   }
 
   return (
-    <div className="main">
-      <h3>Pedidos</h3>
-      <div className="pedidos">
-        <div className="header">
-          <div>Cliente</div>
-          <div>Domicilio de entrega</div>
-          <div>Gustos</div>
+    <>
+      <div className="main">
+        <section className="orders-heading">
+          <div>
+            <p className="eyebrow">OPERACIONES / DESPACHO</p>
+            <h1>Pedidos</h1>
+            <p className="heading-note">Seguimiento de pedidos pendientes</p>
+          </div>
+          <div className="order-count" aria-label={`${pedidosPendientes.length} pedidos en preparación`}>
+            <strong>{pedidosPendientes.length}</strong>
+            <span>en preparación</span>
+          </div>
+        </section>
+        <div className="pedidos">
+          <div className="header">
+            <div>Cliente</div>
+            <div>Domicilio de entrega</div>
+            <div>Gustos</div>
+          </div>
+          {pedidosPendientes.map((pedido) => (
+            <PedidoRow pedido={pedido} key={pedido.id} />
+          ))}
+          {isEmpty(pedidosPendientes) && (
+            <div className="empty-state">
+              <span className="empty-mark" aria-hidden="true">
+                ✳
+              </span>
+              <span data-testid="no-rows">No hay pedidos pendientes</span>
+              <p>Cuando entre uno, lo vas a ver acá.</p>
+            </div>
+          )}
         </div>
-        {pedidosPendientes.map((pedido) => (
-          <PedidoRow pedido={pedido} key={pedido.id} />
-        ))}
-        {isEmpty(pedidosPendientes) && (
-          <>
-            <span data-testid="no-rows">No hay pedidos pendientes</span>
-            <hr />
-          </>
-        )}
       </div>
-      {detail && <div className="toast">{detail}</div>}
-    </div>
+      {detail && (
+        <div className="toast" role="status">
+          {detail}
+        </div>
+      )}
+    </>
   )
 }

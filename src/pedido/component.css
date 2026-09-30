@@ -135,7 +135,7 @@
   font-size: 1rem;
 }
 
-.empty-state [data-testid='no-rows'] {
+.empty-state [data-testid="no-rows"] {
   color: var(--ink);
   font-family: Fraunces, Georgia, serif;
   font-size: 1.05rem;

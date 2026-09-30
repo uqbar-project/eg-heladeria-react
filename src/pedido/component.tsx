@@ -53,7 +53,11 @@ export const PedidoComponent = () => {
             <h1>Pedidos</h1>
             <p className="heading-note">Seguimiento de pedidos pendientes</p>
           </div>
-          <div className="order-count" aria-label={`${pedidosPendientes.length} pedidos en preparación`}>
+          <div
+            className="order-count"
+            role="status"
+            aria-label={`${pedidosPendientes.length} pedidos en preparación`}
+          >
             <strong>{pedidosPendientes.length}</strong>
             <span>en preparación</span>
           </div>

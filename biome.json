@@ -1,28 +1,57 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
+      "a11y": {
+        "useAriaPropsForRole": "warn",
+        "noNoninteractiveElementToInteractiveRole": "warn"
+      },
       "correctness": {
         "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn"
+        "useExhaustiveDependencies": "warn",
+        "useJsxKeyInIterable": "error",
+        "noRenderReturnValue": "error",
+        "useUniqueElementIds": "warn",
+        "noChildrenProp": "error",
+        "useHookAtTopLevel": "error"
       },
       "style": {
         "useBlockStatements": "error",
         "useConst": "error",
-        "useTemplate": "error"
+        "useTemplate": "error",
+        "useSelfClosingElements": "error"
       },
       "suspicious": {
         "noDoubleEquals": "error",
         "noExplicitAny": "error",
         "noImplicitAnyLet": "error",
         "noAssignInExpressions": "error",
-        "noVar": "error"
+        "noVar": "error",
+        "noArrayIndexKey": "warn",
+        "noDuplicateTestHooks": "error",
+        "noExportsInTest": "error",
+        "noFocusedTests": "warn",
+        "noAsyncPromiseExecutor": "error"
       },
       "complexity": {
         "noForEach": "off",
         "useOptionalChain": "warn"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "error",
+        "noDangerouslySetInnerHtmlWithChildren": "error"
+      },
+      "nursery": {
+        "noReactStringRefs": "warn",
+        "noIdenticalTestTitle": "warn"
       }
     }
   },

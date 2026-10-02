@@ -20,7 +20,6 @@
       },
       "correctness": {
         "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn",
         "useUniqueElementIds": "warn"
       },
       "style": {
@@ -35,7 +34,6 @@
         "noImplicitAnyLet": "error",
         "noAssignInExpressions": "error",
         "noVar": "error",
-        "noArrayIndexKey": "warn",
         "noAsyncPromiseExecutor": "error"
       },
       "complexity": {
